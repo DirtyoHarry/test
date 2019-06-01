@@ -1,6 +1,9 @@
 package com.scerit.test;
 
 import android.app.Notification;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.VibrationEffect;
 import android.support.annotation.NonNull;
@@ -30,6 +33,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.scerit.test.background.BackgroundNotification;
 import com.scerit.test.firestore.Users;
 
 import java.util.Calendar;
@@ -43,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     FirebaseAuth mAuth;
     Button btnLogIn;
 
-    NotificationManagerCompat notificationManager;
+
 
 
     Users user = new Users();
@@ -56,15 +60,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        notificationManager = NotificationManagerCompat.from(this);
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_1_ID)
-                .setSmallIcon(R.drawable.notifyicon)
-                .setContentTitle("Test")
-                .setContentText("Test")
-                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+        ComponentName componentName = new ComponentName(this , BackgroundNotification.class);
+        JobInfo info = new JobInfo.Builder(1, componentName)
+                .setPeriodic(15 * 60 * 1000)
+                .setPersisted(true)
                 .build();
 
-        notificationManager.notify(1 , notification);
+        JobScheduler scheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
+        scheduler.schedule(info);
+
+
+
 
 
         mFirestore = FirebaseFirestore.getInstance();

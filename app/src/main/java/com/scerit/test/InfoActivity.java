@@ -18,7 +18,10 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -48,6 +51,8 @@ public class InfoActivity extends AppCompatActivity {
     String bikeid;
     Bikes bookedBike;
 
+    EditText confPassword;
+
     ArrayList<Bookings> booking = new ArrayList<Bookings>();
 
 
@@ -65,6 +70,7 @@ public class InfoActivity extends AppCompatActivity {
         endingBookingText = (TextView) findViewById(R.id.endingBookingText);
         endBookingBtn = (Button) findViewById(R.id.endBookingBtn);
 
+
         maxReturnTime();
         getBookingInfo();
 
@@ -77,7 +83,7 @@ public class InfoActivity extends AppCompatActivity {
 
                 AlertDialog.Builder confirmAlert = new AlertDialog.Builder(InfoActivity.this);
                 View confAlView = getLayoutInflater().inflate(R.layout.alert_confirm, null);
-                EditText confPassword = (EditText) confAlView.findViewById(R.id.insertPswText);
+                confPassword = (EditText) confAlView.findViewById(R.id.insertPswText);
                 Button pswButton = (Button) confAlView.findViewById(R.id.pswBtn);
 
                 confirmAlert.setView(confAlView);
@@ -88,9 +94,33 @@ public class InfoActivity extends AppCompatActivity {
                 pswButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        returnBike();
-                        updateUserBookingStatus();
-                        dialog.dismiss();
+
+                        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+// Get auth credentials from the user for re-authentication. The example below shows
+// email and password credentials but there are multiple possible providers,
+// such as GoogleAuthProvider or FacebookAuthProvider.
+                        AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), confPassword.getText().toString().trim());
+                        Log.d("test", "onClick: "+ confPassword.getText().toString().trim());
+
+                        user.reauthenticate(credential)
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if(task.isSuccessful()) {
+                                            Log.d("dismissbike", "User re-authenticated.");
+                                            returnBike();
+                                            updateUserBookingStatus();
+                                            dialog.dismiss();
+                                        }
+                                        else
+                                        {
+                                            Log.d("test", "onComplete: FALSE");
+
+                                        }
+                                    }
+                                });
+
 
                     }
                 });

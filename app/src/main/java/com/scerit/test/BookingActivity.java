@@ -322,18 +322,26 @@ public class BookingActivity extends AppCompatActivity {
         }
         else
         {
-            if(timeFrame1.isChecked())
+            if(timeFrame1.isChecked() && !timeFrame2.isChecked())
             {
                 timeframes.add("1");
             }
-            if(timeFrame2.isChecked())
+            if(timeFrame2.isChecked() && !timeFrame1.isChecked() && !timeFrame3.isChecked())
             {
                 timeframes.add("2");
             }
-            if(timeFrame3.isChecked())
+            if(timeFrame3.isChecked() && !timeFrame2.isChecked())
             {
                 timeframes.add("3");
 
+            }
+            if(timeFrame1.isChecked() && timeFrame2.isChecked())
+            {
+                timeframes.add("5");
+            }
+            if(timeFrame3.isChecked() && timeFrame2.isChecked())
+            {
+                timeframes.add("6");
             }
        }
 
