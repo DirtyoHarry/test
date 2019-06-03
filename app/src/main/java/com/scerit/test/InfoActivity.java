@@ -31,7 +31,9 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.scerit.test.firestore.Bikes;
 import com.scerit.test.firestore.Bookings;
+import com.scerit.test.firestore.timeframe;
 
+import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -50,8 +52,12 @@ public class InfoActivity extends AppCompatActivity {
 
     String bikeid;
     Bikes bookedBike;
+    String mytimeframe;
 
     EditText confPassword;
+
+
+    FirebaseFirestore db ;
 
     ArrayList<Bookings> booking = new ArrayList<Bookings>();
 
@@ -60,7 +66,13 @@ public class InfoActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
+        db = FirebaseFirestore.getInstance();
         bikeid = getIntent().getStringExtra("myBikeId" );
+        mytimeframe = getIntent().getStringExtra("myBikeTimeframe");
+
+        Log.d("timeframe", "onCreate: " + mytimeframe);
+
+        getTimeframe();
 
       //  Toast.makeText(InfoActivity.this, bikeid, Toast.LENGTH_LONG).show();
 
@@ -95,32 +107,9 @@ public class InfoActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
 
-                        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-// Get auth credentials from the user for re-authentication. The example below shows
-// email and password credentials but there are multiple possible providers,
-// such as GoogleAuthProvider or FacebookAuthProvider.
-                        AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), confPassword.getText().toString().trim());
-                        Log.d("test", "onClick: "+ confPassword.getText().toString().trim());
-
-                        user.reauthenticate(credential)
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        if(task.isSuccessful()) {
-                                            Log.d("dismissbike", "User re-authenticated.");
-                                            returnBike();
-                                            updateUserBookingStatus();
-                                            dialog.dismiss();
-                                        }
-                                        else
-                                        {
-                                            Log.d("test", "onComplete: FALSE");
-
-                                        }
-                                    }
-                                });
-
+                        returnBike();
+                        updateUserBookingStatus();
+                        dialog.dismiss();
 
                     }
                 });
@@ -253,6 +242,40 @@ public class InfoActivity extends AppCompatActivity {
             }
         });
 
+
+    }
+
+    private void getTimeframe ()
+    {
+
+        final ArrayList<timeframe> selectedTimeframe = new ArrayList<timeframe>();
+        CollectionReference bikeCollRef = db.collection("timeframe");
+
+        Query bikesNumber = bikeCollRef.whereEqualTo( "id", mytimeframe);
+
+        bikesNumber.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                Log.d("success", queryDocumentSnapshots.toString() );
+
+                for (QueryDocumentSnapshot document: queryDocumentSnapshots)
+                {
+                    selectedTimeframe.add(document.toObject(timeframe.class));
+                }
+
+                Log.d("success", selectedTimeframe.get(0).getEndtime() );
+                Log.d("success", (Integer.toString(selectedTimeframe.size())));
+
+                endingBookingText.setText(selectedTimeframe.get(0).getEndtime());
+
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+
+            }
+        });
 
     }
 

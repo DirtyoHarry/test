@@ -54,6 +54,7 @@ public class BookingActivity extends AppCompatActivity {
     CheckBox timeFrame3;
     Switch timeFrameSwitch;
     Button bookBtn;
+    Bookings booking = new Bookings();
 
     Users user = new Users();
 
@@ -127,6 +128,8 @@ public class BookingActivity extends AppCompatActivity {
                         updateUserBookingStatus();
                         Intent myIntent = new Intent(getApplicationContext(), InfoActivity.class);
                         myIntent.putExtra("myBikeId", bike.get(0).getId()); //Optional parameters
+                        myIntent.putExtra("myBikeTimeframe", booking.getTimeframe());
+
                         BookingActivity.this.startActivity(myIntent);
                         finish();
 
@@ -279,15 +282,13 @@ public class BookingActivity extends AppCompatActivity {
 
         Log.d("database", FirebaseAuth.getInstance().getUid());
 
-        Bookings booking = new Bookings();
+
 
         booking.setBike(bike.get(0).getId());
 
-        ArrayList<String> mTimeFrames = timeFrameBooked();
+        String mTimeFrames = timeFrameBooked();
 
-        for(int i = 0 ; i < mTimeFrames.size(); i++ )
-        {
-            booking.setTimeframe(mTimeFrames.get(i));
+            booking.setTimeframe(mTimeFrames);
             booking.setToday(strDate);
 
             DocumentReference usersDoc = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().getUid())
@@ -310,38 +311,38 @@ public class BookingActivity extends AppCompatActivity {
         }
 
 
-    }
 
-    private ArrayList<String> timeFrameBooked ()
+
+    private String timeFrameBooked ()
     {
-        ArrayList<String> timeframes = new ArrayList<String>();
+        String timeframes = "0";
 
         if(timeFrame1.isChecked() && timeFrame2.isChecked() && timeFrame3.isChecked())
         {
-            timeframes.add("4");
+            timeframes ="4";
         }
         else
         {
             if(timeFrame1.isChecked() && !timeFrame2.isChecked())
             {
-                timeframes.add("1");
+                timeframes = "1";
             }
             if(timeFrame2.isChecked() && !timeFrame1.isChecked() && !timeFrame3.isChecked())
             {
-                timeframes.add("2");
+                timeframes = "2";
             }
             if(timeFrame3.isChecked() && !timeFrame2.isChecked())
             {
-                timeframes.add("3");
+                timeframes = "3";
 
             }
             if(timeFrame1.isChecked() && timeFrame2.isChecked())
             {
-                timeframes.add("5");
+                timeframes = "5";
             }
             if(timeFrame3.isChecked() && timeFrame2.isChecked())
             {
-                timeframes.add("6");
+                timeframes = "6";
             }
        }
 
@@ -419,6 +420,8 @@ public class BookingActivity extends AppCompatActivity {
                 {
                     Intent myIntent = new Intent(getApplicationContext(), InfoActivity.class);
                     myIntent.putExtra("myBikeId", user.getMybike()); //Optional parameters
+                    myIntent.putExtra("myBikeTimeframe", timeFrameBooked());
+                    Log.d("timeframeValue", "onSuccess: " + timeFrameBooked());
                     BookingActivity.this.startActivity(myIntent);
                     finish();
 
@@ -433,4 +436,5 @@ public class BookingActivity extends AppCompatActivity {
         });
 
     }
+
 }
