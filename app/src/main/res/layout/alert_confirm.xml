@@ -3,13 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#B2000000"
+    android:background="#EEE"
     android:padding="10dp"
     android:fadingEdge="horizontal"
     android:outlineSpotShadowColor="@color/cardview_dark_background">
 
     <TextView
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="20dp"
         android:id="@+id/textView9"
         android:layout_gravity="center"
         android:layout_width="wrap_content"
@@ -17,11 +17,11 @@
         android:text="Inserisci la tua Password"
         android:textStyle="bold"
         android:textSize="17dp"
-        android:textColor="@color/cardview_light_background"
+        android:textColor="#000"
         />
 
     <EditText
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="30dp"
         android:id="@+id/insertPswText"
         android:layout_gravity="center"
         android:layout_width="wrap_content"
@@ -34,12 +34,12 @@
 
     <Button
         android:id="@+id/pswBtn"
-        android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Conferma"
-        android:layout_marginTop="20dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="30dp"
         android:layout_marginBottom="10dp"
-        android:background="@drawable/bg" />
+        android:background="@drawable/bg"
+        android:text="Conferma" />
 
 </LinearLayout>

@@ -18,6 +18,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.support.v7.widget.Toolbar;
+import android.widget.ToggleButton;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -52,7 +53,7 @@ public class BookingActivity extends AppCompatActivity {
     CheckBox timeFrame1;
     CheckBox timeFrame2;
     CheckBox timeFrame3;
-    Switch timeFrameSwitch;
+    ToggleButton timeFrameSwitch;
     Button bookBtn;
     Bookings booking = new Bookings();
 
@@ -81,7 +82,7 @@ public class BookingActivity extends AppCompatActivity {
         timeFrame1 = (CheckBox) findViewById(R.id.timeFrame1);
         timeFrame2 = (CheckBox) findViewById(R.id.timeFrame2);
         timeFrame3 = (CheckBox) findViewById(R.id.timeFrame3);
-        timeFrameSwitch = (Switch) findViewById(R.id.timeFrameSwitch);
+        timeFrameSwitch = (ToggleButton) findViewById(R.id.timeFrameSwitch);
         bookBtn = (Button) findViewById(R.id.bookBtn);
 
 
