@@ -70,9 +70,9 @@ public class InfoActivity extends AppCompatActivity {
         bikeid = getIntent().getStringExtra("myBikeId" );
         bookingId = getIntent().getStringExtra("myBookingId");
 
-        Log.d("timeframe", "onCreate: " + bookingId);
+        Log.d("InfoAc bookingId", "onCreate: " + bookingId);
 
-           getBookingInfo();
+        getBookingInfo();
         getBikeInfo();
 
       //  Toast.makeText(InfoActivity.this, bikeid, Toast.LENGTH_LONG).show();
@@ -234,7 +234,7 @@ public class InfoActivity extends AppCompatActivity {
             }
         });
 
-        DocumentReference bookingDoc = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().getUid()).collection("bookings").document(bookingId);
+        DocumentReference bookingDoc = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().getUid()).collection("bookings").document(booking.getId());
 
         bookingDoc.update("active" , false).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override

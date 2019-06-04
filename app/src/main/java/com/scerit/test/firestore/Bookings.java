@@ -9,14 +9,16 @@ public class Bookings {
     String timeframe;
     String today;
     Boolean active;
+    String id;
 
-
-    public Bookings(String bike, String timeframe, String today, Boolean active) {
+    public Bookings(String bike, String timeframe, String today, Boolean active, String id) {
         this.bike = bike;
         this.timeframe = timeframe;
         this.today = today;
         this.active = active;
+        this.id = id;
     }
+
 
     public Bookings() {
     }
@@ -51,5 +53,13 @@ public class Bookings {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

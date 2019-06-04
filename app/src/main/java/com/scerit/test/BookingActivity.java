@@ -71,6 +71,14 @@ public class BookingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Date date = Calendar.getInstance().getTime();
+        DateFormat dateFormat = new SimpleDateFormat("HH");
+        String strTime = dateFormat.format(date);
+        Log.d("retrieved Time", "onCreate: " + strTime);
+        int hour = Integer.parseInt(strTime);
+
+
+
         checkForBookings();
         setContentView(R.layout.activity_booking);
         db = FirebaseFirestore.getInstance();
@@ -87,6 +95,8 @@ public class BookingActivity extends AppCompatActivity {
         timeFrame3 = (CheckBox) findViewById(R.id.timeFrame3);
         timeFrameSwitch = (ToggleButton) findViewById(R.id.timeFrameSwitch);
         bookBtn = (Button) findViewById(R.id.bookBtn);
+
+
 
 
         timeFrameSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -130,13 +140,7 @@ public class BookingActivity extends AppCompatActivity {
 
                         booker();
 
-                        Intent myIntent = new Intent(getApplicationContext(), InfoActivity.class);
-                        myIntent.putExtra("myBikeId", bike.get(0).getId()); //Optional parameters
-                        myIntent.putExtra("myBookingId", user.getBookingId());
-                        Log.d("timeframeValueClick", "onSuccess: " + user.getBookingId());
 
-                        BookingActivity.this.startActivity(myIntent);
-                        finish();
 
                     }
                 });
@@ -277,12 +281,8 @@ public class BookingActivity extends AppCompatActivity {
 
     private void booker()
     {
-        Date today = Calendar.getInstance().getTime();
-
-     //   today = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-
         Date date = Calendar.getInstance().getTime();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        DateFormat dateFormat = new SimpleDateFormat("yyy-MM-dd");
         String strDate = dateFormat.format(date);
 
         Log.d("database", FirebaseAuth.getInstance().getUid());
@@ -300,25 +300,34 @@ public class BookingActivity extends AppCompatActivity {
             DocumentReference usersDoc = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().getUid())
                     .collection("bookings").document();
 
-            bookingId = usersDoc.getId();
+            booking.setId(usersDoc.getId());
 
         Log.d("BookingID", "booker: " + usersDoc.getId());
 
-            usersDoc.set(booking).addOnCompleteListener(new OnCompleteListener<Void>() {
+            usersDoc.set(booking).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    if (task.isSuccessful())
-                    {
-                        Log.d("database" , "OK");
-                    }
-                    else {
-                        Log.d("database" , "BAD");
-                    }
+                public void onSuccess(Void aVoid) {
+                    Log.d("test", "onSuccess:test ");
+                    updateUserBookingStatus();
+                    updateBikes(bike.get(0).getId());
+                    Intent myIntent = new Intent(getApplicationContext(), InfoActivity.class);
+                    myIntent.putExtra("myBikeId", bike.get(0).getId()); //Optional parameters
+                    myIntent.putExtra("myBookingId", user.getCbookingid());
+                    Log.d("bookingIDValueClick", "onSuccess: " + user.getCbookingid());
+
+                    BookingActivity.this.startActivity(myIntent);
+                    finish();
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+
                 }
             });
 
-            updateBikes(bike.get(0).getId());
-            updateUserBookingStatus();
+
+        Log.d("databasebookingupdate" , "END");
+
         }
 
 
@@ -384,6 +393,7 @@ public class BookingActivity extends AppCompatActivity {
     private void updateUserBookingStatus()
     {
 
+        Log.d("updateUserBookingStatus", "updateUserBookingStatus: ENTERED");
         DocumentReference usersDoc = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().getUid());
 
         usersDoc.update("booked" , true).addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -414,6 +424,8 @@ public class BookingActivity extends AppCompatActivity {
 
         DocumentReference bookingIdDoc = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().getUid());
 
+        Log.d("updatebookingid", "updateUserBookingStatus: " + bookingId);
+
         bookingIdDoc.update("cbookingid" , bookingId).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
@@ -425,32 +437,7 @@ public class BookingActivity extends AppCompatActivity {
                 Log.d("bookingid", "onFailure: NOT updated");
             }
         });
-/*
 
-        CollectionReference bookingCollRef = db.collection("users").document(FirebaseAuth.getInstance().getUid()).collection("bookings");
-
-        Query bookingid = bookingCollRef.whereEqualTo("active", true);
-
-        bookingid.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-            @Override
-            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                Log.d("success", queryDocumentSnapshots.toString() );
-
-                for (QueryDocumentSnapshot document: queryDocumentSnapshots)
-                {
-                   bookingId = document.getId();
-
-                }
-
-
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-
-            }
-        });
-*/
 
     }
 
@@ -470,8 +457,8 @@ public class BookingActivity extends AppCompatActivity {
                 {
                     Intent myIntent = new Intent(getApplicationContext(), InfoActivity.class);
                     myIntent.putExtra("myBikeId", user.getMybike()); //Optional parameters
-                    myIntent.putExtra("myBookingId", user.getBookingId());
-                    Log.d("timeframeValue", "onSuccess: " + user.getBookingId());
+                    myIntent.putExtra("myBookingId", user.getCbookingid());
+                    Log.d("bookingIDvalue", "onSuccess: " + user.getCbookingid());
                     BookingActivity.this.startActivity(myIntent);
                     finish();
 

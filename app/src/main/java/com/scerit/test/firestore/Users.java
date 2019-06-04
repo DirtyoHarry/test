@@ -7,7 +7,6 @@ public class Users {
     String mybike;
     String cbookingid;
 
-
     public Users(String id, String email, Boolean booked, String mybike, String cbookingid) {
         this.id = id;
         this.email = email;
@@ -17,7 +16,6 @@ public class Users {
     }
 
     public Users() {
-
     }
 
     public String getId() {
@@ -28,6 +26,17 @@ public class Users {
         return email;
     }
 
+    public Boolean getBooked() {
+        return booked;
+    }
+
+    public String getMybike() {
+        return mybike;
+    }
+
+    public String getCbookingid() {
+        return cbookingid;
+    }
 
     public void setId(String id) {
         this.id = id;
@@ -37,27 +46,15 @@ public class Users {
         this.email = email;
     }
 
-    public Boolean getBooked() {
-        return booked;
-    }
-
     public void setBooked(Boolean booked) {
         this.booked = booked;
-    }
-
-    public String getMybike() {
-        return mybike;
     }
 
     public void setMybike(String mybike) {
         this.mybike = mybike;
     }
 
-    public void setBookingId(String bookingId) {
-        this.cbookingid = bookingId;
-    }
-
-    public String getBookingId() {
-        return cbookingid;
+    public void setCbookingid(String cbookingid) {
+        this.cbookingid = cbookingid;
     }
 }
