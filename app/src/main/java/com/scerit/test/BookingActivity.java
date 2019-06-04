@@ -57,6 +57,9 @@ public class BookingActivity extends AppCompatActivity {
     Button bookBtn;
     Bookings booking = new Bookings();
 
+
+    String bookingId;
+
     Users user = new Users();
 
 
@@ -126,10 +129,11 @@ public class BookingActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int id) {
 
                         booker();
-                        updateUserBookingStatus();
+
                         Intent myIntent = new Intent(getApplicationContext(), InfoActivity.class);
                         myIntent.putExtra("myBikeId", bike.get(0).getId()); //Optional parameters
-                        myIntent.putExtra("myBikeTimeframe", booking.getTimeframe());
+                        myIntent.putExtra("myBookingId", user.getBookingId());
+                        Log.d("timeframeValueClick", "onSuccess: " + user.getBookingId());
 
                         BookingActivity.this.startActivity(myIntent);
                         finish();
@@ -291,9 +295,14 @@ public class BookingActivity extends AppCompatActivity {
 
             booking.setTimeframe(mTimeFrames);
             booking.setToday(strDate);
+            booking.setActive(true);
 
             DocumentReference usersDoc = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().getUid())
                     .collection("bookings").document();
+
+            bookingId = usersDoc.getId();
+
+        Log.d("BookingID", "booker: " + usersDoc.getId());
 
             usersDoc.set(booking).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
@@ -309,6 +318,7 @@ public class BookingActivity extends AppCompatActivity {
             });
 
             updateBikes(bike.get(0).getId());
+            updateUserBookingStatus();
         }
 
 
@@ -402,6 +412,45 @@ public class BookingActivity extends AppCompatActivity {
             }
         });
 
+        DocumentReference bookingIdDoc = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().getUid());
+
+        bookingIdDoc.update("cbookingid" , bookingId).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d("bookingid", "onSuccess: updated");
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d("bookingid", "onFailure: NOT updated");
+            }
+        });
+/*
+
+        CollectionReference bookingCollRef = db.collection("users").document(FirebaseAuth.getInstance().getUid()).collection("bookings");
+
+        Query bookingid = bookingCollRef.whereEqualTo("active", true);
+
+        bookingid.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                Log.d("success", queryDocumentSnapshots.toString() );
+
+                for (QueryDocumentSnapshot document: queryDocumentSnapshots)
+                {
+                   bookingId = document.getId();
+
+                }
+
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+
+            }
+        });
+*/
 
     }
 
@@ -421,8 +470,8 @@ public class BookingActivity extends AppCompatActivity {
                 {
                     Intent myIntent = new Intent(getApplicationContext(), InfoActivity.class);
                     myIntent.putExtra("myBikeId", user.getMybike()); //Optional parameters
-                    myIntent.putExtra("myBikeTimeframe", timeFrameBooked());
-                    Log.d("timeframeValue", "onSuccess: " + timeFrameBooked());
+                    myIntent.putExtra("myBookingId", user.getBookingId());
+                    Log.d("timeframeValue", "onSuccess: " + user.getBookingId());
                     BookingActivity.this.startActivity(myIntent);
                     finish();
 

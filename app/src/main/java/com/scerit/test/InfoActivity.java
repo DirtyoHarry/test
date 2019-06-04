@@ -52,14 +52,14 @@ public class InfoActivity extends AppCompatActivity {
 
     String bikeid;
     Bikes bookedBike;
-    String mytimeframe;
+    String bookingId;
 
     EditText confPassword;
 
 
     FirebaseFirestore db ;
 
-    ArrayList<Bookings> booking = new ArrayList<Bookings>();
+   Bookings booking = new Bookings();
 
 
     @Override
@@ -68,11 +68,12 @@ public class InfoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_info);
         db = FirebaseFirestore.getInstance();
         bikeid = getIntent().getStringExtra("myBikeId" );
-        mytimeframe = getIntent().getStringExtra("myBikeTimeframe");
+        bookingId = getIntent().getStringExtra("myBookingId");
 
-        Log.d("timeframe", "onCreate: " + mytimeframe);
+        Log.d("timeframe", "onCreate: " + bookingId);
 
-        getTimeframe();
+           getBookingInfo();
+        getBikeInfo();
 
       //  Toast.makeText(InfoActivity.this, bikeid, Toast.LENGTH_LONG).show();
 
@@ -83,8 +84,7 @@ public class InfoActivity extends AppCompatActivity {
         endBookingBtn = (Button) findViewById(R.id.endBookingBtn);
 
 
-        maxReturnTime();
-        getBookingInfo();
+
 
 
 
@@ -122,7 +122,7 @@ public class InfoActivity extends AppCompatActivity {
 
     }
 
-    private void getBookingInfo()
+    private void getBikeInfo()
     {
         DocumentReference usersDoc = FirebaseFirestore.getInstance().collection("bikes").document(bikeid);
        usersDoc.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
@@ -168,42 +168,34 @@ public class InfoActivity extends AppCompatActivity {
 
     }
 
-    private void maxReturnTime ()
+    private void getBookingInfo ()
     {
+        Log.d("checkuid", "getBookingInfo: " + FirebaseAuth.getInstance().getUid());
 
-        booking.clear();
-
-        CollectionReference bikeCollRef = FirebaseFirestore.getInstance().collection("users")
-                .document(FirebaseAuth.getInstance().getUid().toString()).collection("bookings");
-
-        Date date = Calendar.getInstance().getTime();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String strDate = dateFormat.format(date);
+        DocumentReference bookingDRef = FirebaseFirestore.getInstance().collection("users")
+                .document(FirebaseAuth.getInstance().getUid()).collection("bookings").document(bookingId);
 
 
-
-
-        Query returnDeadLine = bikeCollRef.whereEqualTo("today",  strDate).whereEqualTo("bike", bikeid);
-
-        returnDeadLine.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+        bookingDRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
-            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                for (QueryDocumentSnapshot document: queryDocumentSnapshots)
-                {
-                    booking.add(document.toObject(Bookings.class));
-                    Log.d("query", "onSuccess: " + booking.get(0).getTimeframe());
-                }
-
-          //      Toast.makeText(InfoActivity.this , booking.get(0).getTime().toString(), Toast.LENGTH_LONG).show();
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                booking = documentSnapshot.toObject(Bookings.class);
+                Log.d("getBookingInfo", "onSuccess: " + booking.getToday() + " " + documentSnapshot.getId());
+                getTimeframe ();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-
                 Toast.makeText(InfoActivity.this , "Deadline non trovata", Toast.LENGTH_LONG).show();
 
             }
         });
+
+
+
+
+
+
     }
 
     private void sortBookingByDate()
@@ -242,6 +234,20 @@ public class InfoActivity extends AppCompatActivity {
             }
         });
 
+        DocumentReference bookingDoc = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().getUid()).collection("bookings").document(bookingId);
+
+        bookingDoc.update("active" , false).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d("bookingActive", "onSuccess: updated");
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d("bookingActive", "onFailure: NOT updated");
+            }
+        });
+
 
     }
 
@@ -251,7 +257,9 @@ public class InfoActivity extends AppCompatActivity {
         final ArrayList<timeframe> selectedTimeframe = new ArrayList<timeframe>();
         CollectionReference bikeCollRef = db.collection("timeframe");
 
-        Query bikesNumber = bikeCollRef.whereEqualTo( "id", mytimeframe);
+        Log.d("getTimeFrame", "getTimeframe:" + booking.getTimeframe());
+
+        Query bikesNumber = bikeCollRef.whereEqualTo( "id", booking.getTimeframe());
 
         bikesNumber.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override

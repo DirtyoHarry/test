@@ -5,13 +5,15 @@ public class Users {
     String email;
     Boolean booked;
     String mybike;
+    String cbookingid;
 
 
-    public Users(String id, String email, Boolean booked, String mybike) {
+    public Users(String id, String email, Boolean booked, String mybike, String cbookingid) {
         this.id = id;
         this.email = email;
         this.booked = booked;
         this.mybike = mybike;
+        this.cbookingid = cbookingid;
     }
 
     public Users() {
@@ -49,5 +51,13 @@ public class Users {
 
     public void setMybike(String mybike) {
         this.mybike = mybike;
+    }
+
+    public void setBookingId(String bookingId) {
+        this.cbookingid = bookingId;
+    }
+
+    public String getBookingId() {
+        return cbookingid;
     }
 }
