@@ -3,6 +3,7 @@
     package="com.scerit.test">
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -11,7 +12,8 @@
         android:roundIcon="@drawable/icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".InfoActivity"></activity>
+        <activity android:name=".RecoverPasswordActivity"></activity>
+        <activity android:name=".InfoActivity" />
         <activity android:name=".BookingActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -20,8 +22,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".background.BackgroundNotification"
-            android:permission="android.permission.BIND_JOB_SERVICE"/>
+
+        <service
+            android:name=".background.BackgroundNotification"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
     </application>
 
 </manifest>

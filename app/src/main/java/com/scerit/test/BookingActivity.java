@@ -35,6 +35,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.scerit.test.firestore.Bikes;
 import com.scerit.test.firestore.Bookings;
 import com.scerit.test.firestore.Users;
+import com.scerit.test.firestore.pastcode;
 
 import java.lang.reflect.Array;
 import java.text.DateFormat;
@@ -44,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 public class BookingActivity extends AppCompatActivity {
 
@@ -138,7 +140,59 @@ public class BookingActivity extends AppCompatActivity {
                 builder.setPositiveButton("Accetto", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
 
-                        booker();
+                        booker(new FirestoreCallBack() {
+                            @Override
+                            public void onCallBack(String string) {
+                                Log.d("onCallBack", "onCallBack: " + string);
+                                updateUserBookingStatus(new FirestoreCallBack() {
+                                    @Override
+                                    public void onCallBack(String string) {
+                                        Log.d("onCallBack", "onCallBack: " + string);
+                                        updateUserBikeStatus(new FirestoreCallBack() {
+                                            @Override
+                                            public void onCallBack(String string) {
+                                                Log.d("onCallBack", "onCallBack: " + string);
+                                                updateUserBookingId(new FirestoreCallBack() {
+                                                    @Override
+                                                    public void onCallBack(String string) {
+                                                        Log.d("onCallBack", "onCallBack: " + string);
+                                                        updateBikes(bike.get(0).getId(), new FirestoreCallBack() {
+                                                            @Override
+                                                            public void onCallBack(String string) {
+                                                                setBikeNewCode(new FirestoreCallBack() {
+                                                                    @Override
+                                                                    public void onCallBack(String string) {
+                                                                        Log.d("onCallBack", "onCallBack: " + string);
+                                                                        setBikeOldCode(new FirestoreCallBack() {
+                                                                            @Override
+                                                                            public void onCallBack(String string) {
+                                                                                Log.d("onCallBack", "onCallBack: " + string);
+                                                                                Intent myIntent = new Intent(getApplicationContext(), InfoActivity.class);
+                                                                                myIntent.putExtra("myBikeId", bike.get(0).getId()); //Optional parameters
+                                                                                myIntent.putExtra("myBookingId", user.getCbookingid());
+                                                                                Log.d("bookingIDValueClick", "onSuccess: " + user.getCbookingid());
+                                                                                BookingActivity.this.startActivity(myIntent);
+                                                                                finish();
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                });
+
+                                                            }
+                                                        });
+                                                    }
+                                                });
+                                            }
+                                        });
+
+
+
+
+                                    }
+                                });
+
+                            }
+                        });
 
 
 
@@ -279,7 +333,7 @@ public class BookingActivity extends AppCompatActivity {
 
     }
 
-    private void booker()
+    private void booker(final FirestoreCallBack firestoreCallBack)
     {
         Date date = Calendar.getInstance().getTime();
         DateFormat dateFormat = new SimpleDateFormat("yyy-MM-dd");
@@ -300,23 +354,16 @@ public class BookingActivity extends AppCompatActivity {
             DocumentReference usersDoc = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().getUid())
                     .collection("bookings").document();
 
-            booking.setId(usersDoc.getId());
 
         Log.d("BookingID", "booker: " + usersDoc.getId());
+        user.setCbookingid(usersDoc.getId());
+        booking.setId(usersDoc.getId());
 
             usersDoc.set(booking).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
                     Log.d("test", "onSuccess:test ");
-                    updateUserBookingStatus();
-                    updateBikes(bike.get(0).getId());
-                    Intent myIntent = new Intent(getApplicationContext(), InfoActivity.class);
-                    myIntent.putExtra("myBikeId", bike.get(0).getId()); //Optional parameters
-                    myIntent.putExtra("myBookingId", user.getCbookingid());
-                    Log.d("bookingIDValueClick", "onSuccess: " + user.getCbookingid());
-
-                    BookingActivity.this.startActivity(myIntent);
-                    finish();
+               firestoreCallBack.onCallBack("1");
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -369,11 +416,12 @@ public class BookingActivity extends AppCompatActivity {
         return timeframes;
     }
 
-    private void updateBikes(String selectedbike)
+    private void updateBikes(String selectedbike , FirestoreCallBack firestoreCallBack)
     {
 
         DocumentReference usersDoc = FirebaseFirestore.getInstance().collection("bikes").document(selectedbike);
         usersDoc.update("istaken", true);
+        firestoreCallBack.onCallBack("3");
 
     }
 
@@ -390,7 +438,7 @@ public class BookingActivity extends AppCompatActivity {
 
     }
 
-    private void updateUserBookingStatus()
+    private void updateUserBookingStatus(final FirestoreCallBack firestoreCallBack)
     {
 
         Log.d("updateUserBookingStatus", "updateUserBookingStatus: ENTERED");
@@ -400,6 +448,7 @@ public class BookingActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Void aVoid) {
                 Log.d("booking", "onSuccess: booked");
+                firestoreCallBack.onCallBack("2");
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -408,12 +457,19 @@ public class BookingActivity extends AppCompatActivity {
             }
         });
 
+
+    }
+
+    private void  updateUserBikeStatus (final FirestoreCallBack firestoreCallBack)
+    {
+
         DocumentReference mybikeDoc = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().getUid());
 
-        usersDoc.update("mybike" , bike.get(0).getId()).addOnSuccessListener(new OnSuccessListener<Void>() {
+        mybikeDoc.update("mybike" , bike.get(0).getId()).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Log.d("mybike", "onSuccess: updated");
+                firestoreCallBack.onCallBack("2.1");
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -421,15 +477,20 @@ public class BookingActivity extends AppCompatActivity {
                 Log.d("mybike", "onFailure: NOT updated");
             }
         });
+    }
+
+    private void updateUserBookingId(final FirestoreCallBack firestoreCallBack)
+    {
 
         DocumentReference bookingIdDoc = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().getUid());
 
-        Log.d("updatebookingid", "updateUserBookingStatus: " + bookingId);
+        Log.d("updatebookingid", "updateUserBookingStatus: " + user.getCbookingid());
 
-        bookingIdDoc.update("cbookingid" , bookingId).addOnSuccessListener(new OnSuccessListener<Void>() {
+        bookingIdDoc.update("cbookingid" , user.getCbookingid()).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Log.d("bookingid", "onSuccess: updated");
+                firestoreCallBack.onCallBack("2.2");
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -437,7 +498,6 @@ public class BookingActivity extends AppCompatActivity {
                 Log.d("bookingid", "onFailure: NOT updated");
             }
         });
-
 
     }
 
@@ -473,5 +533,100 @@ public class BookingActivity extends AppCompatActivity {
         });
 
     }
+
+
+    private void setBikeNewCode(final FirestoreCallBack firestoreCallBack)
+    {
+        DocumentReference usersDoc = FirebaseFirestore.getInstance().collection("bikes").document(bike.get(0).getId());
+        String newcode = codeGen();
+
+        usersDoc.update("newcode" , newcode).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                firestoreCallBack.onCallBack("4 ");
+
+                Log.d("successUpdate", "onSuccess: NEWCODE");
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                firestoreCallBack.onCallBack("4 FAILED");
+
+                Log.d("bookingid", "onFailure: NOT updated");
+            }
+        });
+
+        CollectionReference codeColl = FirebaseFirestore.getInstance().collection("bikes").document(bike.get(0).getId()).collection("pastcode");
+
+        pastcode pcode = new pastcode();
+        pcode.setCode(newcode);
+
+        codeColl.add(pcode).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentReference> task) {
+                if (task.isSuccessful())
+                {
+                    Log.d("CODECOLLETION", "onComplete: done");
+                }
+            }
+        });
+
+    }
+
+
+    private  void setBikeOldCode(final FirestoreCallBack firestoreCallBack)
+    {
+
+        DocumentReference usersDoc = FirebaseFirestore.getInstance().collection("bikes").document(bike.get(0).getId());
+
+
+        usersDoc.update("oldcode", bike.get(0).getNewcode()).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d("successUpdate", "onSuccess: OLDCODE ");
+                firestoreCallBack.onCallBack("5");
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                firestoreCallBack.onCallBack("5 FAILED");
+
+            }
+        });
+
+    }
+
+
+
+    private String codeGen ()
+    {
+        String newcode = "";
+        Random r = new Random();
+        for (int i = 0 ; i < 5 ; i++)
+        {
+            newcode += Integer.toString(r.nextInt(9));
+        }
+        Log.d("codegen", "codeGen: "+ newcode);
+        return newcode;
+    }
+
+
+
+
+
+
+
+
+
+
+
+    private interface FirestoreCallBack
+    {
+        void onCallBack (String string);
+
+    }
+
+
+
 
 }

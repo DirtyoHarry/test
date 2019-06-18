@@ -3,7 +3,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#EEE"
     android:padding="10dp"
     android:fadingEdge="horizontal"
     android:outlineSpotShadowColor="@color/cardview_dark_background">
@@ -18,7 +17,7 @@
         android:textStyle="bold"
         android:textSize="17dp"
         android:textColor="#000"
-        />
+        android:visibility="gone"/>
 
     <EditText
         android:layout_marginTop="30dp"
@@ -30,7 +29,8 @@
         android:inputType="textPassword"
         android:background="@drawable/txtbg"
         android:padding="10dp"
-        android:hint="Password"/>
+        android:hint="Password"
+        android:visibility="gone"/>
 
     <Button
         android:id="@+id/pswBtn"

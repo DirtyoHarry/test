@@ -5,6 +5,7 @@ import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.VibrationEffect;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ComponentName componentName = new ComponentName(this , BackgroundNotification.class);
+        /*ComponentName componentName = new ComponentName(this , BackgroundNotification.class);
         JobInfo info = new JobInfo.Builder(1, componentName)
                 .setPeriodic(15 * 60 * 1000)
                 .setPersisted(true)
@@ -68,10 +69,19 @@ public class MainActivity extends AppCompatActivity {
 
         JobScheduler scheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
         scheduler.schedule(info);
+*/
+       /* SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
+        boolean firstStart = prefs.getBoolean("firstStart", true);
 
+        if(firstStart)
+        {
+            Intent myIntent = new Intent(getApplicationContext(), RecoverPasswordActivity.class);
+            // myIntent.putExtra("key", value); //Optional parameters
+            MainActivity.this.startActivity(myIntent);
+            finish();
+        }
 
-
-
+        */
 
         mFirestore = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
