@@ -1,7 +1,9 @@
 package com.scerit.test;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.Image;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -11,9 +13,14 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -57,6 +64,9 @@ public class BookingActivity extends AppCompatActivity {
     CheckBox timeFrame3;
     ToggleButton timeFrameSwitch;
     Button bookBtn;
+    Spinner bikeListView;
+    ImageView genderImage;
+
     Bookings booking = new Bookings();
 
 
@@ -97,6 +107,28 @@ public class BookingActivity extends AppCompatActivity {
         timeFrame3 = (CheckBox) findViewById(R.id.timeFrame3);
         timeFrameSwitch = (ToggleButton) findViewById(R.id.timeFrameSwitch);
         bookBtn = (Button) findViewById(R.id.bookBtn);
+        bikeListView = (Spinner) findViewById(R.id.bikeListView);
+        genderImage = (ImageView) findViewById(R.id.genderImageView);
+
+
+        bikeListView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if(bike.get(position).getFemale())
+                {
+                    genderImage.setImageResource(R.drawable.girl);
+                }
+                else
+                {
+                    genderImage.setImageResource(R.drawable.man);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
 
 
@@ -140,6 +172,9 @@ public class BookingActivity extends AppCompatActivity {
                 builder.setPositiveButton("Accetto", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
 
+                        final ProgressDialog progressDialog = new ProgressDialog(BookingActivity.this);
+
+                        progressDialog.show(BookingActivity.this, "Carico" , "Stiamo prenotando la tua bici");
                         booker(new FirestoreCallBack() {
                             @Override
                             public void onCallBack(String string) {
@@ -156,7 +191,7 @@ public class BookingActivity extends AppCompatActivity {
                                                     @Override
                                                     public void onCallBack(String string) {
                                                         Log.d("onCallBack", "onCallBack: " + string);
-                                                        updateBikes(bike.get(0).getId(), new FirestoreCallBack() {
+                                                        updateBikes(bike.get(bikeListView.getSelectedItemPosition()).getId(), new FirestoreCallBack() {
                                                             @Override
                                                             public void onCallBack(String string) {
                                                                 setBikeNewCode(new FirestoreCallBack() {
@@ -167,8 +202,9 @@ public class BookingActivity extends AppCompatActivity {
                                                                             @Override
                                                                             public void onCallBack(String string) {
                                                                                 Log.d("onCallBack", "onCallBack: " + string);
+                                                                                progressDialog.dismiss();
                                                                                 Intent myIntent = new Intent(getApplicationContext(), InfoActivity.class);
-                                                                                myIntent.putExtra("myBikeId", bike.get(0).getId()); //Optional parameters
+                                                                                myIntent.putExtra("myBikeId", bike.get(bikeListView.getSelectedItemPosition()).getId()); //Optional parameters
                                                                                 myIntent.putExtra("myBookingId", user.getCbookingid());
                                                                                 Log.d("bookingIDValueClick", "onSuccess: " + user.getCbookingid());
                                                                                 BookingActivity.this.startActivity(myIntent);
@@ -228,6 +264,14 @@ public class BookingActivity extends AppCompatActivity {
         timeFrame1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(timeFrame1.isChecked())
+                {
+                    bookBtn.setEnabled(true);
+                }
+                else if(timeFrame1.isChecked() == false && timeFrame2.isChecked() == false && timeFrame3.isChecked() == false)
+                {
+                    bookBtn.setEnabled(false);
+                }
                 if(timeFrame1.isChecked() && timeFrame3.isChecked())
                 {
                     timeFrame2.setChecked(true);
@@ -238,6 +282,14 @@ public class BookingActivity extends AppCompatActivity {
         timeFrame3.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(timeFrame3.isChecked())
+                {
+                    bookBtn.setEnabled(true);
+                }
+                else if(timeFrame1.isChecked() == false && timeFrame2.isChecked() == false && timeFrame3.isChecked() == false)
+                {
+                    bookBtn.setEnabled(false);
+                }
                 if (timeFrame1.isChecked() && timeFrame3.isChecked())
                 {
                     timeFrame2.setChecked(true);
@@ -248,6 +300,14 @@ public class BookingActivity extends AppCompatActivity {
         timeFrame2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(timeFrame2.isChecked())
+                {
+                    bookBtn.setEnabled(true);
+                }
+                else if(timeFrame1.isChecked() == false && timeFrame2.isChecked() == false && timeFrame3.isChecked() == false)
+                {
+                    bookBtn.setEnabled(false);
+                }
                 if (timeFrame1.isChecked() && timeFrame3.isChecked())
                 {
                     timeFrame2.setChecked(true);
@@ -270,7 +330,16 @@ public class BookingActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-       getBikesNumber ();
+       getBikesNumber(new FirestoreBikeCallBack() {
+           @Override
+           public void onCallBack(List<String> list) {
+               ArrayAdapter<String> adp1 = new ArrayAdapter<String>(BookingActivity.this,
+                       android.R.layout.simple_list_item_1, list);
+               adp1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+               bikeListView.setAdapter(adp1);
+
+           }
+       });
 
     }
 
@@ -289,13 +358,14 @@ public class BookingActivity extends AppCompatActivity {
 
     }
 
-    private void getBikesNumber ()
+    private void getBikesNumber (final FirestoreBikeCallBack firestoreBikeCallBack)
     {
         bike.clear();
 
         CollectionReference bikeCollRef = db.collection("bikes");
 
         Query bikesNumber = bikeCollRef.whereEqualTo("istaken", false);
+
 
         bikesNumber.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
@@ -313,6 +383,15 @@ public class BookingActivity extends AppCompatActivity {
 
                 nBikes.setText(Integer.toString(bike.size()));
 
+                final List<String> list = new ArrayList<String>();
+                int x = 0;
+                for (Bikes b : bike)
+                {
+                    list.add(bike.get(x).getId());
+                    x++;
+                }
+
+                firestoreBikeCallBack.onCallBack(list);
 
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -321,7 +400,6 @@ public class BookingActivity extends AppCompatActivity {
 
             }
         });
-
 
 
     }
@@ -343,7 +421,7 @@ public class BookingActivity extends AppCompatActivity {
 
 
 
-        booking.setBike(bike.get(0).getId());
+        booking.setBike(bike.get(bikeListView.getSelectedItemPosition()).getId());
 
         String mTimeFrames = timeFrameBooked();
 
@@ -465,7 +543,7 @@ public class BookingActivity extends AppCompatActivity {
 
         DocumentReference mybikeDoc = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().getUid());
 
-        mybikeDoc.update("mybike" , bike.get(0).getId()).addOnSuccessListener(new OnSuccessListener<Void>() {
+        mybikeDoc.update("mybike" , bike.get(bikeListView.getSelectedItemPosition()).getId()).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Log.d("mybike", "onSuccess: updated");
@@ -537,7 +615,7 @@ public class BookingActivity extends AppCompatActivity {
 
     private void setBikeNewCode(final FirestoreCallBack firestoreCallBack)
     {
-        DocumentReference usersDoc = FirebaseFirestore.getInstance().collection("bikes").document(bike.get(0).getId());
+        DocumentReference usersDoc = FirebaseFirestore.getInstance().collection("bikes").document(bike.get(bikeListView.getSelectedItemPosition()).getId());
         String newcode = codeGen();
 
         usersDoc.update("newcode" , newcode).addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -556,7 +634,7 @@ public class BookingActivity extends AppCompatActivity {
             }
         });
 
-        CollectionReference codeColl = FirebaseFirestore.getInstance().collection("bikes").document(bike.get(0).getId()).collection("pastcode");
+        CollectionReference codeColl = FirebaseFirestore.getInstance().collection("bikes").document(bike.get(bikeListView.getSelectedItemPosition()).getId()).collection("pastcode");
 
         pastcode pcode = new pastcode();
         pcode.setCode(newcode);
@@ -577,10 +655,10 @@ public class BookingActivity extends AppCompatActivity {
     private  void setBikeOldCode(final FirestoreCallBack firestoreCallBack)
     {
 
-        DocumentReference usersDoc = FirebaseFirestore.getInstance().collection("bikes").document(bike.get(0).getId());
+        DocumentReference usersDoc = FirebaseFirestore.getInstance().collection("bikes").document(bike.get(bikeListView.getSelectedItemPosition()).getId());
 
 
-        usersDoc.update("oldcode", bike.get(0).getNewcode()).addOnSuccessListener(new OnSuccessListener<Void>() {
+        usersDoc.update("oldcode", bike.get(bikeListView.getSelectedItemPosition()).getNewcode()).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Log.d("successUpdate", "onSuccess: OLDCODE ");
@@ -624,6 +702,13 @@ public class BookingActivity extends AppCompatActivity {
     {
         void onCallBack (String string);
 
+
+
+    }
+
+    private interface FirestoreBikeCallBack
+    {
+        void onCallBack (List<String> list);
     }
 
 

@@ -6,16 +6,26 @@ public class Bikes {
     Boolean istaken;
     String user;
     String id;
+    Boolean female;
 
     public Bikes() {
     }
 
-    public Bikes(String newcode, String oldcode, Boolean istaken, String user, String id) {
+    public Bikes(String newcode, String oldcode, Boolean istaken, String user, String id, Boolean female) {
         this.newcode = newcode;
         this.oldcode = oldcode;
         this.istaken = istaken;
         this.user = user;
         this.id = id;
+        this.female = female;
+    }
+
+    public Boolean getFemale() {
+        return female;
+    }
+
+    public void setFemale(Boolean female) {
+        this.female = female;
     }
 
     public String getNewcode() {

@@ -5,9 +5,10 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
+        android:screenOrientation="portrait"
         android:name=".App"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/icon"
         android:label="Beecy"
         android:roundIcon="@drawable/icon"
         android:supportsRtl="true"
