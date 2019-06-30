@@ -8,41 +8,20 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:204644522583:android:eff174acf62d5351",
-        "android_client_info": {
-          "package_name": "com.example.baik"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "204644522583-puot4682jq3dad34ietnal85l0o43dmu.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDHjaPOe3iPrPYNth7JBxfOJoNdH0vuQ7E"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "204644522583-puot4682jq3dad34ietnal85l0o43dmu.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:204644522583:android:70a598449f3e9248",
         "android_client_info": {
           "package_name": "com.scerit.test"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "204644522583-pqt2402bk2hsvrfrk2li1rbnov47ckeu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.scerit.test",
+            "certificate_hash": "304a0070e57079ea861a48cf68ef3c68a05be091"
+          }
+        },
         {
           "client_id": "204644522583-puot4682jq3dad34ietnal85l0o43dmu.apps.googleusercontent.com",
           "client_type": 3

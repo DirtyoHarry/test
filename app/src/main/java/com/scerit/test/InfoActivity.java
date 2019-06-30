@@ -7,10 +7,16 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,6 +24,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
@@ -31,6 +38,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.scerit.test.firestore.Bikes;
 import com.scerit.test.firestore.Bookings;
+import com.scerit.test.firestore.pastcode;
 import com.scerit.test.firestore.timeframe;
 
 import java.lang.reflect.Array;
@@ -39,8 +47,10 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class InfoActivity extends AppCompatActivity {
 
@@ -49,6 +59,9 @@ public class InfoActivity extends AppCompatActivity {
     TextView newCodeText;
     TextView endingBookingText;
     Button endBookingBtn;
+    ListView oldCodesList;
+
+
 
     String bikeid;
     Bikes bookedBike;
@@ -64,8 +77,14 @@ public class InfoActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.actionbar);
+        setSupportActionBar(toolbar);
+
         db = FirebaseFirestore.getInstance();
         bikeid = getIntent().getStringExtra("myBikeId" );
         bookingId = getIntent().getStringExtra("myBookingId");
@@ -120,6 +139,54 @@ public class InfoActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.help , menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        FirebaseAnalytics.getInstance(this).logEvent("oldcode_click" , null);
+
+        final List<String> startingList = new ArrayList<>();
+        AlertDialog.Builder codeAlert = new AlertDialog.Builder(InfoActivity.this);
+        View confAlView = getLayoutInflater().inflate(R.layout.oldcodes_list, null);
+        oldCodesList = (ListView) confAlView.findViewById(R.id.oldCodeList);
+
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>
+                (this, android.R.layout.simple_list_item_1, startingList);
+        oldCodesList.setAdapter(arrayAdapter);
+
+        codeAlert.setView(confAlView);
+
+        final AlertDialog dialog = codeAlert.create();
+        dialog.show();
+
+        oldCodesArray(new FirestoreCallBack() {
+            @Override
+            public void onCallBack(List<pastcode> pastcodesArray) {
+
+                for (int i = 0; i < pastcodesArray.size(); i++)
+                {
+                    startingList.add(pastcodesArray.get(i).getCode());
+                }
+
+                arrayAdapter.notifyDataSetChanged();
+            }
+
+        });
+
+
+
+
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void getBikeInfo()
@@ -285,6 +352,41 @@ public class InfoActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void oldCodesArray (final FirestoreCallBack firestoreCallBack)
+    {
+        final List<pastcode> pastcodeList = new ArrayList<>();
+
+        CollectionReference bikeCollRef = db.collection("bikes").document(bookedBike.getId()).collection("pastcode");
+
+        bikeCollRef.orderBy("time").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+
+
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+                for (QueryDocumentSnapshot document: queryDocumentSnapshots)
+                {
+                    pastcodeList.add(document.toObject(pastcode.class));
+                }
+
+                firestoreCallBack.onCallBack(pastcodeList);
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+
+            }
+        });
+
+
+    }
+
+    private interface FirestoreCallBack
+    {
+        void onCallBack (List<pastcode> pastcodesArray);
     }
 
 }

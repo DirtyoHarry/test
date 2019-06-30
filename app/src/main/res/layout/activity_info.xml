@@ -6,6 +6,13 @@
     android:layout_height="match_parent"
     tools:context=".InfoActivity">
 
+    <include
+        android:id="@+id/actionbar"
+        layout="@layout/actionbar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteY="-23dp" />
+
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
