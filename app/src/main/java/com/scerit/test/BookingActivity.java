@@ -39,6 +39,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firestore.v1.StructuredQuery;
 import com.scerit.test.firestore.Bikes;
 import com.scerit.test.firestore.Bookings;
 import com.scerit.test.firestore.Users;
@@ -58,6 +59,7 @@ public class BookingActivity extends AppCompatActivity {
 
     FirebaseFirestore db ;
 
+
     TextView nBikes;
     CheckBox timeFrame1;
     CheckBox timeFrame2;
@@ -69,11 +71,10 @@ public class BookingActivity extends AppCompatActivity {
 
     Bookings booking = new Bookings();
 
-
-    String bookingId;
+    boolean bookingSuccesful;
 
     Users user = new Users();
-
+    Users mUser = new Users();
 
     int nBikesCounter;
     int bn;
@@ -178,7 +179,10 @@ public class BookingActivity extends AppCompatActivity {
                         booker(new FirestoreCallBack() {
                             @Override
                             public void onCallBack(String string) {
-                                Log.d("onCallBack", "onCallBack: " + string);
+                                Log.d("onCallBack", "onCallBack: Booker " + string);
+                                if (string.equals("1"))
+                                {
+                                Log.d("onCallBack", "onCallBack: Boker(inside if) " + string);
                                 updateUserBookingStatus(new FirestoreCallBack() {
                                     @Override
                                     public void onCallBack(String string) {
@@ -228,6 +232,12 @@ public class BookingActivity extends AppCompatActivity {
                                 });
 
                             }
+                            else
+                                {
+                                    Log.d("onCallBack", "onCallBack: Booker (inside ELSE)");
+                                    progressDialog.dismiss();
+                                    Log.d("onCallBack", "onCallBack: Booker (afterDismiss)");
+                                }}
                         });
 
 
@@ -239,8 +249,10 @@ public class BookingActivity extends AppCompatActivity {
                         dialog.dismiss();
                     }
                 });
-                AlertDialog dialog = builder.create();
-                dialog.show();
+
+
+             //   AlertDialog dialog = builder.create();
+               // dialog.show();
             }
 
 
@@ -343,7 +355,7 @@ public class BookingActivity extends AppCompatActivity {
 
     }
 
-    private  void timeFrameSelecter()
+    private void timeFrameSelecter()
     {
         if(timeFrame1.isChecked() && timeFrame2.isChecked() && timeFrame3.isChecked())
         {
@@ -358,49 +370,72 @@ public class BookingActivity extends AppCompatActivity {
 
     }
 
+    private void userCampus(final FirestoreCallBack firestoreCallBack)
+    {
+        // prendi l'utente corrente, estrai user campus
+
+        DocumentReference userDoc = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().getUid());
+        userDoc.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                //dammi il campo "campus"
+                mUser = documentSnapshot.toObject(Users.class);
+                Log.d("LOG", "userCampus1: " + documentSnapshot);
+                Log.d("LOG", "userCampus2: " + mUser);
+                firestoreCallBack.onCallBack(mUser.getCampus());
+            }
+        });
+
+    }
+
     private void getBikesNumber (final FirestoreBikeCallBack firestoreBikeCallBack)
     {
         bike.clear();
 
-        CollectionReference bikeCollRef = db.collection("bikes");
-
-        Query bikesNumber = bikeCollRef.whereEqualTo("istaken", false);
-
-
-        bikesNumber.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+        final CollectionReference bikeCollRef = db.collection("bikes");
+        userCampus(new FirestoreCallBack() {
             @Override
-            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                Log.d("success", queryDocumentSnapshots.toString() );
+            public void onCallBack(String string) {
+                Query bikesNumber = bikeCollRef.whereEqualTo("istaken", false).whereEqualTo("campus" , string);
 
-                for (QueryDocumentSnapshot document: queryDocumentSnapshots)
-                {
-                    bike.add(document.toObject(Bikes.class));
 
-                }
+                bikesNumber.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        Log.d("success", queryDocumentSnapshots.toString() );
 
-                Log.d("success", bike.get(0).getOldcode().toString() );
-                Log.d("success", (Integer.toString(bike.size())));
+                        for (QueryDocumentSnapshot document: queryDocumentSnapshots)
+                        {
+                            bike.add(document.toObject(Bikes.class));
 
-                nBikes.setText(Integer.toString(bike.size()));
+                        }
 
-                final List<String> list = new ArrayList<String>();
-                int x = 0;
-                for (Bikes b : bike)
-                {
-                    list.add(bike.get(x).getId());
-                    x++;
-                }
+                        // Log.d("success", bike.get(0).getOldcode().toString() );
+                        //    Log.d("success", (Integer.toString(bike.size())));
 
-                firestoreBikeCallBack.onCallBack(list);
+                        nBikes.setText(Integer.toString(bike.size()));
 
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
+                        final List<String> list = new ArrayList<String>();
+                        int x = 0;
+                        for (Bikes b : bike)
+                        {
+                            list.add(bike.get(x).getId());
+                            x++;
+                        }
+
+                        firestoreBikeCallBack.onCallBack(list);
+
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+
+                    }
+                });
+
 
             }
         });
-
 
     }
 
@@ -413,47 +448,79 @@ public class BookingActivity extends AppCompatActivity {
 
     private void booker(final FirestoreCallBack firestoreCallBack)
     {
+
         Date date = Calendar.getInstance().getTime();
-        DateFormat dateFormat = new SimpleDateFormat("yyy-MM-dd");
-        String strDate = dateFormat.format(date);
+        DateFormat dateFormat = new SimpleDateFormat("yyy-MM-dd-hh-mm");
+        final String strDate = dateFormat.format(date);
+
+        final String SelectedBike = bike.get(bikeListView.getSelectedItemPosition()).getId();
 
         Log.d("database", FirebaseAuth.getInstance().getUid());
 
+       DocumentReference selBikeDocRef = db.collection("bikes").document(SelectedBike);
+
+        selBikeDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+
+                Bikes retBike = documentSnapshot.toObject(Bikes.class);
+
+                if(retBike.getId() == SelectedBike && retBike.getIstaken() != true)
+             {
+
+                 booking.setBike(SelectedBike);
 
 
-        booking.setBike(bike.get(bikeListView.getSelectedItemPosition()).getId());
 
-        String mTimeFrames = timeFrameBooked();
+                 String mTimeFrames = timeFrameBooked();
 
-            booking.setTimeframe(mTimeFrames);
-            booking.setToday(strDate);
-            booking.setActive(true);
+                 booking.setTimeframe(mTimeFrames);
+                 booking.setToday(strDate);
+                 booking.setActive(true);
 
-            DocumentReference usersDoc = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().getUid())
-                    .collection("bookings").document();
+                 DocumentReference usersDoc = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().getUid())
+                         .collection("bookings").document();
 
 
-        Log.d("BookingID", "booker: " + usersDoc.getId());
-        user.setCbookingid(usersDoc.getId());
-        booking.setId(usersDoc.getId());
+                 Log.d("BookingID", "booker: " + usersDoc.getId());
+                 user.setCbookingid(usersDoc.getId());
+                 booking.setId(usersDoc.getId());
 
-            usersDoc.set(booking).addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    Log.d("test", "onSuccess:test ");
-               firestoreCallBack.onCallBack("1");
+                 usersDoc.set(booking).addOnSuccessListener(new OnSuccessListener<Void>() {
+                     @Override
+                     public void onSuccess(Void aVoid) {
+                         Log.d("test", "onSuccess:test ");
+                         firestoreCallBack.onCallBack("1");
+                     }
+                 }).addOnFailureListener(new OnFailureListener() {
+                     @Override
+                     public void onFailure(@NonNull Exception e) {
+
+                     }
+                 });
+             }
+
+                    else
+                    {
+                        firestoreCallBack.onCallBack("0");
+                        Toast.makeText(BookingActivity.this, "La Bici non è più disponibile", Toast.LENGTH_LONG).show();
+
+                    }
+
+
+
+            Log.d("databasebookingupdate" , "END");
+
                 }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
 
-                }
-            });
+            }
+        });
 
 
-        Log.d("databasebookingupdate" , "END");
-
-        }
+    }
 
 
 

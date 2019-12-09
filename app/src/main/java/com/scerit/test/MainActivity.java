@@ -93,10 +93,8 @@ public class MainActivity extends AppCompatActivity {
                 // myIntent.putExtra("key", value); //Optional parameters
                 MainActivity.this.startActivity(myIntent);
                 finish();
-        } else {
-
-
         }
+
 
         setContentView(R.layout.activity_main);
 
@@ -165,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Log.d("UserUpdate", "onFailure: user NOT updated");
+                Log.d("UserUpdate", "onFailure: user NOT updated " + e.getMessage());
             }
         });
 

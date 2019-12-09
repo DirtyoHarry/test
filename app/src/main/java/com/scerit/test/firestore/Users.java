@@ -6,16 +6,28 @@ public class Users {
     Boolean booked;
     String mybike;
     String cbookingid;
+    String campus;
 
-    public Users(String id, String email, Boolean booked, String mybike, String cbookingid) {
+
+
+    public Users(String id, String email, Boolean booked, String mybike, String cbookingid, String campus) {
         this.id = id;
         this.email = email;
         this.booked = booked;
         this.mybike = mybike;
         this.cbookingid = cbookingid;
+        this.campus = campus;
     }
 
     public Users() {
+    }
+
+    public void setCampus(String campus) {
+        this.campus = campus;
+    }
+
+    public String getCampus() {
+        return campus;
     }
 
     public String getId() {
