@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
         FirebaseUser cUser = FirebaseAuth.getInstance().getCurrentUser();
         if (cUser != null) {
 
-                Intent myIntent = new Intent(getApplicationContext(), BookingActivity.class);
+                Intent myIntent = new Intent(getApplicationContext(), TutorialActivity.class); //BookingActivity.class
                 // myIntent.putExtra("key", value); //Optional parameters
                 MainActivity.this.startActivity(myIntent);
                 finish();
